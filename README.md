@@ -62,6 +62,8 @@ React 19 · TypeScript · Vite · Tailwind CSS · Supabase (Auth + Postgres + St
 
 ## Puesta en marcha
 
+> **Estado (5 sep 2026):** el esquema SQL y los datos iniciales ya están instalados en el proyecto Supabase de Nexus y existe el primer usuario administrador. Faltan solo los ajustes de Auth del paso 1 (puntos 3 y 4) y el despliegue en Vercel.
+
 ### 1. Crear el proyecto en Supabase
 
 1. Entra a [supabase.com](https://supabase.com) → **New project** (plan Free). Guarda la contraseña de la base de datos.
