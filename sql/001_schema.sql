@@ -350,7 +350,8 @@ create trigger on_auth_user_created
 create or replace function public.protect_profile_fields()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  if not public.is_admin() then
+  -- Sin sesión de usuario (editor SQL, service role) se permite el mantenimiento
+  if auth.uid() is not null and not public.is_admin() then
     if new.role is distinct from old.role
        or new.active is distinct from old.active
        or new.person_id is distinct from old.person_id then
