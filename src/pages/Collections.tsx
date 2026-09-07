@@ -12,7 +12,8 @@ import type { Milestone, MilestoneFormData, TransactionFormData } from '../types
 import { addDays, formatMoney, formatMonthLong, formatPercent, todayISO } from '../lib/formatters';
 import { paymentInitialFor } from '../lib/forms';
 import { SEM } from '../lib/constants';
-import { btnPrimary, errorMessage, pill, selectClass, tableCell, tableHead } from '../lib/ui';
+import { btnPrimary, errorMessage, pill, tableCell, tableHead } from '../lib/ui';
+import FilterSelect from '../components/ui/FilterSelect';
 import PageHeader from '../components/ui/PageHeader';
 import { PageLoader } from '../components/ui/Spinner';
 import KpiCard from '../components/ui/KpiCard';
@@ -238,22 +239,22 @@ export default function Collections() {
               </button>
             ))}
             <div className="flex gap-2 ml-auto">
-              <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className={`${selectClass} w-auto`}>
-                <option value="">Todos los proyectos</option>
-                {data.projects.filter((p) => !p.is_general).map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <select value={clientFilter} onChange={(e) => setClientFilter(e.target.value)} className={`${selectClass} w-auto`}>
-                <option value="">Todos los clientes</option>
-                {clients?.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <FilterSelect
+                label="Proyecto"
+                allLabel="Todos los proyectos"
+                value={projectFilter}
+                onChange={setProjectFilter}
+                options={data.projects.filter((p) => !p.is_general).map((p) => ({ value: p.id, label: p.name }))}
+                className="w-auto"
+              />
+              <FilterSelect
+                label="Cliente"
+                allLabel="Todos los clientes"
+                value={clientFilter}
+                onChange={setClientFilter}
+                options={(clients ?? []).map((c) => ({ value: c.id, label: c.name }))}
+                className="w-auto"
+              />
             </div>
           </div>
           <MilestoneTable

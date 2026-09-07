@@ -4,7 +4,8 @@ import { emptyTransactionFilters } from '../../types';
 import { useProjects } from '../../hooks/useProjects';
 import { useAccounts, useCategories, useClients, usePeople } from '../../hooks/useCatalogs';
 import { transactionStatusLabels, transactionTypeLabels } from '../../lib/constants';
-import { inputClass, pill, selectClass } from '../../lib/ui';
+import { inputClass, pill } from '../../lib/ui';
+import FilterSelect from '../ui/FilterSelect';
 
 interface Props {
   filters: TF;
@@ -70,65 +71,58 @@ export default function TransactionFiltersBar({ filters, onChange }: Props) {
             className={`${inputClass} pl-9`}
           />
         </div>
-        <select value={filters.type} onChange={(e) => update('type', e.target.value)} className={selectClass}>
-          <option value="">Todos los tipos</option>
-          {(Object.keys(transactionTypeLabels) as TransactionType[]).map((t) => (
-            <option key={t} value={t}>
-              {transactionTypeLabels[t]}
-            </option>
-          ))}
-        </select>
-        <select value={filters.status} onChange={(e) => update('status', e.target.value)} className={selectClass}>
-          <option value="">Todos los estados</option>
-          {(Object.keys(transactionStatusLabels) as TransactionStatus[]).map((s) => (
-            <option key={s} value={s}>
-              {transactionStatusLabels[s]}
-            </option>
-          ))}
-        </select>
-        <select value={filters.project_id} onChange={(e) => update('project_id', e.target.value)} className={selectClass}>
-          <option value="">Todos los proyectos</option>
-          {projects?.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-        <select value={filters.category_id} onChange={(e) => update('category_id', e.target.value)} className={selectClass}>
-          <option value="">Todas las categorías</option>
-          {categories?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <select value={filters.person_id} onChange={(e) => update('person_id', e.target.value)} className={selectClass}>
-          <option value="">Todas las personas</option>
-          {people?.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-        <select value={filters.client_id} onChange={(e) => update('client_id', e.target.value)} className={selectClass}>
-          <option value="">Todos los clientes</option>
-          {clients?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <select value={filters.account_id} onChange={(e) => update('account_id', e.target.value)} className={selectClass}>
-          <option value="">Todas las cuentas</option>
-          {accounts?.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </select>
+        <FilterSelect
+          label="Tipo"
+          allLabel="Todos los tipos"
+          value={filters.type}
+          onChange={(v) => update('type', v)}
+          options={(Object.keys(transactionTypeLabels) as TransactionType[]).map((t) => ({ value: t, label: transactionTypeLabels[t] }))}
+        />
+        <FilterSelect
+          label="Estado"
+          allLabel="Todos los estados"
+          value={filters.status}
+          onChange={(v) => update('status', v)}
+          options={(Object.keys(transactionStatusLabels) as TransactionStatus[]).map((s) => ({ value: s, label: transactionStatusLabels[s] }))}
+        />
+        <FilterSelect
+          label="Proyecto"
+          allLabel="Todos los proyectos"
+          value={filters.project_id}
+          onChange={(v) => update('project_id', v)}
+          options={(projects ?? []).map((p) => ({ value: p.id, label: p.name }))}
+        />
+        <FilterSelect
+          label="Categoría"
+          allLabel="Todas las categorías"
+          value={filters.category_id}
+          onChange={(v) => update('category_id', v)}
+          options={(categories ?? []).map((c) => ({ value: c.id, label: c.name }))}
+        />
+        <FilterSelect
+          label="Persona"
+          allLabel="Todas las personas"
+          value={filters.person_id}
+          onChange={(v) => update('person_id', v)}
+          options={(people ?? []).map((p) => ({ value: p.id, label: p.name }))}
+        />
+        <FilterSelect
+          label="Cliente"
+          allLabel="Todos los clientes"
+          value={filters.client_id}
+          onChange={(v) => update('client_id', v)}
+          options={(clients ?? []).map((c) => ({ value: c.id, label: c.name }))}
+        />
+        <FilterSelect
+          label="Cuenta"
+          allLabel="Todas las cuentas"
+          value={filters.account_id}
+          onChange={(v) => update('account_id', v)}
+          options={(accounts ?? []).map((a) => ({ value: a.id, label: a.name }))}
+        />
         <div className="flex gap-2">
-          <input type="date" value={filters.date_from} onChange={(e) => update('date_from', e.target.value)} className={inputClass} title="Desde" />
-          <input type="date" value={filters.date_to} onChange={(e) => update('date_to', e.target.value)} className={inputClass} title="Hasta" />
+          <input type="date" value={filters.date_from} onChange={(e) => update('date_from', e.target.value)} className={`${inputClass} ${filters.date_from ? '' : 'text-nx-muted'}`} title="Desde" />
+          <input type="date" value={filters.date_to} onChange={(e) => update('date_to', e.target.value)} className={`${inputClass} ${filters.date_to ? '' : 'text-nx-muted'}`} title="Hasta" />
         </div>
       </div>
     </div>
