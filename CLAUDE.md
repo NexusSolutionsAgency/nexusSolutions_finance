@@ -33,7 +33,8 @@ React 19 + TypeScript + Vite + Tailwind CSS 3 + Supabase (Auth, Postgres, Storag
 
 ## File map
 ```
-sql/            001_schema.sql, 002_seed.sql
+sql/            001_schema.sql, 002_seed.sql, 003_heartbeat.sql
+api/            heartbeat.ts (Vercel Function that keeps Supabase Free from pausing; daily Vercel Cron + GitHub Action every 2 days)
 src/pages/      Dashboard, Transactions, Projects, ProjectDetail, Team, Collections, Reports, Settings, Login, ResetPassword
 src/components/ layout/, ui/, dashboard/, transactions/, projects/, collections/, settings/
 src/hooks/      useTransactions, useMilestones, useProjects, useCatalogs (generic CRUD factory), useSettings, useProfiles, useAudit, useAttachments, useFinanceData
@@ -45,6 +46,9 @@ src/contexts/   AuthContext.tsx
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+# Server-only (Vercel), used by api/heartbeat.ts:
+CRON_SECRET=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 ## Build / deploy

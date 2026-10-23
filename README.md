@@ -62,7 +62,7 @@ React 19 · TypeScript · Vite · Tailwind CSS · Supabase (Auth + Postgres + St
 
 ## Puesta en marcha
 
-> **Estado (5 sep 2026):** el esquema SQL y los datos iniciales ya están instalados en el proyecto Supabase de Nexus y existe el primer usuario administrador. Faltan solo los ajustes de Auth del paso 1 (puntos 3 y 4) y el despliegue en Vercel.
+> **Estado (5 sep 2026):** el esquema SQL y los datos iniciales ya están instalados en el proyecto Supabase de Nexus y existe el primer usuario administrador. El 22 oct 2026 se aplicó también `003_heartbeat.sql`. Faltan solo los ajustes de Auth del paso 1 (puntos 3 y 4) y el despliegue en Vercel.
 
 ### 1. Crear el proyecto en Supabase
 
@@ -70,6 +70,7 @@ React 19 · TypeScript · Vite · Tailwind CSS · Supabase (Auth + Postgres + St
 2. En **SQL Editor** ejecuta, en orden, el contenido de:
    - `sql/001_schema.sql` (tablas, funciones, triggers, RLS, bucket de comprobantes)
    - `sql/002_seed.sql` (monedas, categorías, cuentas, proyectos iniciales)
+   - `sql/003_heartbeat.sql` (latido que evita que Supabase Free pause el proyecto; ver «Latido de Supabase»)
 3. En **Authentication → Providers → Email** desactiva **Confirm email** (así los miembros creados desde la app pueden entrar de inmediato).
 4. En **Authentication → URL Configuration** agrega la URL de Vercel en *Site URL* y en *Redirect URLs* (y `http://localhost:5173` para desarrollo). Esto es necesario para el enlace de "olvidé mi contraseña".
 5. Crea el primer usuario en **Authentication → Users → Add user** (correo + contraseña, marca *Auto Confirm User*). **El primer usuario queda automáticamente como Administrador activo.** Los demás se crean desde la app en Configuración → Miembros.
@@ -84,6 +85,13 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 
 En local: copia `.env.example` a `.env`. En Vercel: **Settings → Environment Variables**.
 
+Solo en Vercel (servidor, tipo *Sensitive*; las usa `/api/heartbeat` y nunca llegan al navegador):
+
+```
+CRON_SECRET=<cadena aleatoria larga>
+SUPABASE_SERVICE_ROLE_KEY=<Settings → API → service_role>
+```
+
 ### 3. Desarrollo local
 
 ```bash
@@ -97,15 +105,27 @@ Abre `http://localhost:5173`.
 
 1. Sube el repositorio a GitHub.
 2. En Vercel → **Add New Project** → importa el repo. Framework: **Vite**, build `npm run build`, output `dist`.
-3. Agrega las dos variables de entorno.
+3. Agrega las variables de entorno (las dos `VITE_*` y las dos del latido).
 4. Deploy. Cada push a `main` redespliega automáticamente.
 
-`vercel.json` ya incluye la regla para que las rutas del navegador (`/movimientos`, `/proyectos/...`) funcionen al recargar.
+`vercel.json` ya incluye la regla para que las rutas del navegador (`/movimientos`, `/proyectos/...`) funcionen al recargar (excepto `/api/*`) y el cron del latido.
+
+### 5. Latido de Supabase
+
+Supabase Free pausa el proyecto tras 7 días sin actividad. Para evitarlo:
+
+- **`/api/heartbeat`** (Vercel Function, `api/heartbeat.ts`) llama `record_heartbeat()` (`sql/003_heartbeat.sql`): inserta un latido, borra los de más de 30 días y devuelve el conteo de proyectos activos. Exige `Authorization: Bearer <CRON_SECRET>`; sin él responde 401.
+- **Vercel Cron** lo llama a diario a las 13:00 UTC (8:00 Colombia), según `vercel.json`.
+- **GitHub Actions** (`.github/workflows/heartbeat.yml`) lo llama cada 2 días como respaldo. Secretos del repo: `CRON_SECRET` (el mismo de Vercel) y `HEARTBEAT_URL` (`https://<proyecto>.vercel.app/api/heartbeat`). Probarlo con **Actions → Latido de Supabase → Run workflow**.
+- GitHub desactiva los workflows programados tras 60 días sin commits: si pasa, **Actions → Latido de Supabase → Enable workflow**.
+
+Prueba manual: `curl -s -o /dev/null -w "%{http_code}" https://<proyecto>.vercel.app/api/heartbeat` → 401; con `-H "Authorization: Bearer <CRON_SECRET>"` → 200 y `{"ok":true,…}`.
 
 ## Estructura
 
 ```
-sql/                001_schema.sql · 002_seed.sql
+sql/                001_schema.sql · 002_seed.sql · 003_heartbeat.sql
+api/                heartbeat.ts (latido de Supabase, Vercel Function)
 src/
 ├── pages/          Dashboard, Transactions, Projects, ProjectDetail, Team, Collections, Reports, Settings, Login, ResetPassword
 ├── components/
